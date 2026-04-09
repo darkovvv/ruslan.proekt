@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FanTrip Hub — Спортивные выезды</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-glass: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.2);
+      --text: #ededed;
+      --muted: #a1a1aa;
+      --glow-color: rgba(255, 255, 255, 0.15);
+      --glow-strong: rgba(220, 230, 255, 0.3);
+      --radius: 20px;
+      --container: min(1200px, calc(100% - 40px));
+      --font: 'Inter', -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 10px; }
+    body {
+      font-family: var(--font); font-size: 1.6rem; color: var(--text);
+      background: var(--bg);
+      background-image: radial-gradient(circle at 15% 50%, rgba(255,255,255,0.02) 0%, transparent 50%),
+                        radial-gradient(circle at 85% 30%, rgba(200,220,255,0.02) 0%, transparent 50%);
+      line-height: 1.6; overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; transition: 0.3s ease; }
+    button { font: inherit; background: none; border: none; cursor: pointer; color: inherit; transition: 0.3s ease; }
+
+    .container { width: var(--container); margin: 0 auto; }
+    .section { padding: 80px 0; }
+
+    h1, h2, h3 { font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
+    h1 { font-size: clamp(3.6rem, 8vw, 6.4rem); margin-bottom: 20px; }
+    h2 { font-size: clamp(2.8rem, 5vw, 4rem); margin-bottom: 16px; }
+    h3 { font-size: 2.2rem; margin-bottom: 12px; }
+    p { color: var(--muted); margin-bottom: 24px; }
+
+    /* карточки и стекло */
+    .card {
+      background: var(--bg-glass); border: 1px solid var(--border);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-radius: var(--radius); padding: 30px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 30px var(--glow-color), inset 0 0 20px rgba(255,255,255,0.02);
+      transform: translateY(-4px);
+    }
+
+    .badge {
+      display: inline-flex; padding: 6px 16px; border-radius: 99px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      font-size: 1.3rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 20px; box-shadow: 0 0 10px var(--glow-color);
+    }
+
+    /* кнопки */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 14px 28px; border-radius: 99px; font-weight: 600; font-size: 1.5rem;
+      border: 1px solid transparent;
+    }
+    .btn-primary { background: #fff; color: #000; box-shadow: 0 0 20px var(--glow-color); }
+    .btn-primary:hover { box-shadow: 0 0 30px var(--glow-strong); transform: scale(1.02); }
+    .btn-primary:disabled { background: #555; color: #888; box-shadow: none; transform: none; cursor: not-allowed; }
+    .btn-outline { border-color: var(--border); color: var(--text); background: var(--bg-glass); }
+    .btn-outline:hover { border-color: var(--text); box-shadow: 0 0 15px var(--glow-color); }
+
+    /* шапка */
+    .header {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+      background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+    .logo { font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em; text-shadow: 0 0 10px var(--glow-color); }
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .burger { display: none; font-size: 2.8rem; }
+    .auth-group { display: flex; gap: 10px; align-items: center; }
+    .user-menu { display: none; gap: 15px; align-items: center; font-weight: 600; }
+
+    .hero { padding: 180px 0 100px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .trips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+
+    /* карточка поездки */
+    .trip-card { display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
+    .trip-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; flex-wrap: wrap; gap: 10px; }
+    .trip-price { font-size: clamp(2.4rem, 4vw, 3rem); font-weight: 800; white-space: nowrap; text-shadow: 0 0 15px var(--glow-color); transition: color 0.3s; }
+
+    /* прогресс и демо-блок */
+    .progress-bg { height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .progress-bar { height: 100%; width: 0%; transition: width 0.3s ease, background-color 0.3s ease; }
+    .demo-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-top: 20px; }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .price-display { font-size: 4rem; font-weight: 900; margin: 15px 0; }
+
+    .full-width-demo { margin-top: 24px; }
+    
+    @media (min-width: 769px) {
+      .full-width-demo { display: flex; align-items: center; padding: 30px 40px; gap: 30px; }
+      .full-width-demo .info-row { margin-bottom: 0; gap: 15px; white-space: nowrap; }
+      .full-width-demo .progress-bg { flex-grow: 1; margin-top: 0; min-width: 150px; }
+      .full-width-demo .price-display { margin: 0; }
+    }
+
+    /* инпуты */
+    input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; margin: 15px 0; }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; }
+    input[type=range]::-webkit-slider-thumb {
+      height: 20px; width: 20px; border-radius: 50%; background: #fff; cursor: pointer; -webkit-appearance: none; margin-top: -7px; box-shadow: 0 0 15px #fff;
+    }
+    .field input {
+      width: 100%; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font); outline: none; transition: 0.3s;
+    }
+    .field input:focus { border-color: rgba(255,255,255,0.5); box-shadow: 0 0 15px var(--glow-color); }
+
+    /* --- ОТЗЫВЫ --- */
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+    .review-card { display: flex; flex-direction: column; gap: 15px; padding: 25px; height: 100%; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 5px; }
+    .review-header strong { font-size: 1.8rem; }
+    .review-header .badge { margin: 0; font-size: 1.1rem; padding: 4px 10px; background: rgba(255,255,255,0.1); }
+    
+    .review-footer {
+      display: flex; gap: 15px; margin-top: auto; padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+    .reaction-btn {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--muted); font-size: 1.4rem; font-weight: 600;
+      transition: all 0.3s ease; padding: 6px 12px;
+      border-radius: 8px; margin-left: -10px;
+    }
+    .reaction-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    /* Нежно-зеленый для лайка */
+    .reaction-btn.liked { color: #a7f3d0; text-shadow: 0 0 10px rgba(167, 243, 208, 0.4); background: rgba(167, 243, 208, 0.05); }
+    /* Нежно-красный для дизлайка */
+    .reaction-btn.disliked { color: #fecaca; text-shadow: 0 0 10px rgba(254, 202, 202, 0.4); background: rgba(254, 202, 202, 0.05); }
+
+    /* --- КОЛЛАЖ (ТРАНСПОРТ) --- */
+    .collage-container {
+      position: relative; height: 650px; border-radius: var(--radius);
+      display: flex; justify-content: center; align-items: center;
+      margin-top: 40px; perspective: 1000px;
+    }
+    .collage-item {
+      position: absolute; width: 280px; height: 190px;
+      background-color: var(--bg-glass); border: 1px solid var(--border);
+      border-radius: var(--radius); background-size: cover; background-position: center;
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      cursor: pointer; display: flex; justify-content: center; align-items: center;
+      color: rgba(255,255,255,0.3); font-weight: 800; font-size: 1.4rem; z-index: 1;
+
+      /* Используем CSS-переменные для хранения начальных координат и угла */
+      --tx: 0px; --ty: 0px; --rot: 0deg;
+      transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+    }
+    /* Разбрасываем фото шире друг от друга */
+    .collage-item:nth-child(1) { --tx: -360px; --ty: -160px; --rot: -12deg; }
+    .collage-item:nth-child(2) { --tx: 0px; --ty: -190px; --rot: 4deg; }
+    .collage-item:nth-child(3) { --tx: 360px; --ty: -140px; --rot: 15deg; }
+    .collage-item:nth-child(4) { --tx: -340px; --ty: 160px; --rot: 8deg; }
+    .collage-item:nth-child(5) { --tx: 10px; --ty: 190px; --rot: -6deg; }
+    .collage-item:nth-child(6) { --tx: 350px; --ty: 150px; --rot: -10deg; }
+
+    /* При наведении фото летит к центру лишь частично и увеличивается, чтобы курсор не "соскальзывал" */
+    .collage-item:hover {
+      --rot: 0deg;
+      transform: translate(calc(var(--tx) * 0.4), calc(var(--ty) * 0.4)) scale(1.6) rotate(var(--rot)) !important;
+      z-index: 100;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.9), 0 0 50px var(--glow-color);
+      border-color: #fff;
+      color: transparent; 
+    }
+
+    /* Адаптив коллажа для мобильных */
+    @media (max-width: 768px) {
+      .collage-container {
+        height: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px;
+      }
+      .collage-item {
+        position: relative; transform: none !important; width: 100%; height: 140px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      }
+      .collage-item:hover { transform: scale(1.05) !important; z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+    }
+
+    /* модалки */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+      z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal.open { display: flex; opacity: 1; }
+    .modal-content { max-width: 480px; width: 100%; position: relative; max-height: 90vh; overflow-y: auto; }
+    .close-modal { position: absolute; top: 15px; right: 20px; font-size: 2.8rem; color: var(--muted); }
+
+    /* выбор мест */
+    .seat-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+    .seat {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px;
+      height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: 0.2s;
+    }
+    .seat.taken { opacity: 0.2; cursor: not-allowed; background: rgba(255,0,0,0.1); border-color: rgba(255,0,0,0.2); }
+    .seat.free:hover { border-color: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+    .seat.selected { background: #fff; color: #000; box-shadow: 0 0 15px #fff; font-weight: 800; }
+
+    /* "Испытай удачу" */
+    .luck-banner {
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.06) 0%, transparent 60%), var(--bg-glass);
+      border: 1px solid var(--border); border-radius: 24px;
+      padding: 60px 20px; text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative; overflow: hidden;
+    }
+    .luck-banner::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); opacity: 0.5;
+    }
+    .luck-banner h2 { font-size: clamp(3rem, 5vw, 4.5rem); text-shadow: 0 0 20px var(--glow-color); margin-bottom: 15px; }
+
+    /* рулетка */
+    .roulette-container {
+      position: relative; width: min(340px, 100%); aspect-ratio: 1; 
+      margin: 40px auto; border-radius: 50%; border: 4px solid #fff; 
+      box-shadow: 0 0 40px rgba(255,255,255,0.2); overflow: hidden;
+    }
+    .wheel {
+      width: 100%; height: 100%; border-radius: 50%; position: relative; 
+      transition: transform 4.5s cubic-bezier(0.2, 0.8, 0.1, 1);
+    }
+    .wheel-item {
+      position: absolute; top: 50%; left: 50%; width: 50%; height: 20px; margin-top: -10px;
+      transform-origin: left center; display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 12px;
+    }
+    .wheel-item span { font-size: 1.1rem; font-weight: 800; white-space: nowrap; text-transform: uppercase; }
+
+    .arrow {
+      position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; 
+      border-top: 30px solid #000; z-index: 10; filter: drop-shadow(0 0 10px #000);
+    }
+    .center-go {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 60px; height: 60px; background: #000; border-radius: 50%; border: 3px solid #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; z-index: 5;
+      box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    }
+
+    .animate-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .animate-up.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .burger { display: block; }
+      .nav-links {
+        position: absolute; top: 70px; left: 0; width: 100%; background: rgba(9, 9, 11, 0.98); backdrop-filter: blur(20px);
+        flex-direction: column; padding: 30px 20px; border-bottom: 1px solid var(--border);
+        transform: translateY(-150%); opacity: 0; transition: all 0.3s ease; z-index: -1;
+      }
+      .nav-links.active { transform: translateY(0); opacity: 1; }
+      .hero { padding: 140px 0 60px; }
+    }
+
+    /* --- СЕКЦИЯ КАРТЫ --- */
+    .map-wrapper {
+      background: #0d0d10; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .map-wrapper::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 2px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px);
+      background-size: 100px 100px, 150px 150px; background-position: 0 0, 30px 60px;
+      opacity: 0.1; pointer-events: none;
+    }
+    .svg-map { width: 100%; height: auto; display: block; }
+
+    .route-line {
+      fill: none; stroke: rgba(255, 255, 255, 0); stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      transition: stroke-dashoffset 0.8s ease-out, stroke 0.3s; pointer-events: none;
+      filter: drop-shadow(0 0 5px rgba(255,255,255,0.6));
+    }
+    .route-line.active { stroke-dashoffset: 0; stroke: rgba(255, 255, 255, 0.8); }
+
+    .city-point { cursor: pointer; }
+    .city-point circle { fill: rgba(255, 255, 255, 0.2); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .city-point text {
+      fill: #808080; font-size: 14px; font-weight: 400; text-anchor: middle;
+      pointer-events: none; transition: 0.3s; letter-spacing: 0.5px;
+    }
+    .city-point:hover circle, .city-point.active circle { fill: #fff; r: 15; filter: drop-shadow(0 0 12px #fff); }
+    .city-point:hover text, .city-point.active text { fill: #fff; opacity: 1; font-weight: 600; transform: translateY(-3px); }
+
+    .city-point.main circle {
+      fill: rgba(255, 255, 255, 0.9); filter: drop-shadow(0 0 18px rgba(255,255,255,0.8));
+      stroke: rgba(255,255,255,0.4); stroke-width: 1.5;
+    }
+    .city-point.main text { fill: #fff; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 1; }
+
+    @media (max-width: 600px) {
+      .map-wrapper { padding: 10px; }
+      .city-point text { font-size: 11px; }
+      .city-point.main text { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container nav">
+      <a href="#" class="logo">FanTrip Hub</a>
+      <button class="burger" id="burgerBtn">☰</button>
+      <nav class="nav-links" id="navLinks">
+        <a href="#how">Механика цены</a>
+        <a href="#trips">Поездки</a>
+        <div class="auth-group">
+          <button data-modal="loginModal">Вход</button>
+          <button class="btn btn-primary" style="padding: 8px 16px" data-modal="regModal">Регистрация</button>
+        </div>
+        <div class="user-menu">
+          <span id="userNameDisplay"></span>
+          <button id="logoutBtn" style="color: var(--muted)">Выйти</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero animate-up visible">
+      <div class="container">
+        <div class="badge">Спортивный сезон 2026</div>
+        <h1>Твой билет на стадион<br>по лучшей цене.</h1>
+        <p style="font-size: 2rem; max-width: 600px; margin: 0 auto 40px;">
+          Собираем фанатов, едем вместе. Чем больше нас в автобусе, тем зеленее и выгоднее скидка.
+        </p>
+        <div class="hero-btns">
+          <a href="#trips" class="btn btn-primary">Посмотреть туры</a>
+          <a href="#how" class="btn btn-outline">В чем секрет?</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section container animate-up">
+      <div style="text-align: center; margin-bottom: 50px;">
+        <h2>Как работает магия цен</h2>
+        <p>Крути ползунок и смотри, как тает стоимость поездки при заполнении мест.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card">
+          <h3>1. Выбери матч</h3>
+          <p>Найди тур на команду. Транспорт и атмосферу берем на себя.</p>
+        </article>
+        <article class="card">
+          <h3>2. Следи за местами</h3>
+          <div class="field" style="margin-top: 15px;">
+            <label for="demoFill">Симуляция занятых мест:</label>
+            <input type="range" id="demoFill" min="5" max="48" value="24">
+          </div>
+        </article>
+        <article class="card">
+          <h3>3. Экономь</h3>
+          <p>Чем больше мест занято, тем ниже итоговая цена для всех участников выезда. Плати меньше за тот же комфорт!</p>
+        </article>
+      </div>
+      <div class="demo-box full-width-demo card">
+        <div class="info-row"><span>Мест:</span> <strong id="demoSeats">0 / 48</strong></div>
+        <div class="progress-bg"><div class="progress-bar" id="demoBar"></div></div>
+        <div class="price-display" id="demoPrice">0 ₽</div>
+        <div class="info-row"><span>Твоя скидка:</span> <strong id="demoPercent" style="transition: color 0.3s">0%</strong></div>
+      </div>
+    </section>
+
+    <section id="trips" class="section container animate-up">
+      <div style="margin-bottom: 40px;">
+        <h2>Актуальные выезды</h2>
+        <p>Бронируй места и применяй призы.</p>
+      </div>
+      <div id="tripsGrid" class="trips-grid"></div>
+    </section>
+  </main>
+
+  <section id="comfort" class="section container animate-up">
+    <div style="text-align: center; margin-bottom: 50px;">
+      <h2>Комфорт уровня «Премиум»</h2>
+      <p>Забудь про старые пазики. Мы везем тебя на топовых лайнерах.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card comfort-card">
+        <div class="icon-circle"></div>
+        <h3>Wi-Fi и зарядки</h3>
+        <p>USB-порты у каждого кресла и стабильный интернет. Будь на связи до самого стадиона.</p>
+      </article>
+      <article class="card comfort-card">
+        <div class="icon-circle"></div>
+        <h3>Климат-контроль</h3>
+        <p>В салоне всегда +22°C. Автоматическая система поддерживает свежесть вне зависимости от жары за окном.</p>
+      </article>
+      <article class="card comfort-card">
+        <div class="icon-circle"></div>
+        <h3>Фан-атмосфера</h3>
+        <p>Заряды, футбольные квизы и просмотр легендарных матчей на экранах в пути.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Блок с отзывами -->
+  <section id="reviews" class="section container animate-up">
+    <div style="text-align: center; margin-bottom: 50px;">
+      <h2>Отзывы наших фанатов</h2>
+      <p>Те, кто уже сорвал голос на трибуне вместе с нами.</p>
+    </div>
+    <div class="reviews-grid">
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Алексей М.</strong>
+          <span class="badge">Выезд в Москву</span>
+        </div>
+        <p>«Атмосфера — пушка! Всю дорогу пели заряды. Автобус реально комфортный, спина после поездки не отвалилась.»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">24</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">1</span></button>
+        </div>
+      </article>
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Дмитрий С.</strong>
+          <span class="badge">Выезд в Казань</span>
+        </div>
+        <p>«Первый раз гонял с FanTrip. Очень зашел формат динамической скидки. Чем больше нас собралось, тем дешевле вышло!»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">18</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">0</span></button>
+        </div>
+      </article>
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Руслан Х.</strong>
+          <span class="badge">Выезд в Волгоград</span>
+        </div>
+        <p>«Лайнеры топ, кондеи работают, розетки у каждого сиденья. Приехали заряженные на 100%. Однозначно рекомендую!»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">42</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">3</span></button>
+        </div>
+      </article>
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Максим В.</strong>
+          <span class="badge">Выезд в Н. Новгород</span>
+        </div>
+        <p>«Крутил рулетку и выиграл 500 рублей скидки. Поездка обошлась почти даром. Организация на высшем уровне!»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">11</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">2</span></button>
+        </div>
+      </article>
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Евгений К.</strong>
+          <span class="badge">Выезд в Самару</span>
+        </div>
+        <p>«Отличная компания, никаких проблем в дороге. Wi-Fi тянул фильмы без лагов. Лучший способ поддержать команду на выезде.»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">35</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">0</span></button>
+        </div>
+      </article>
+      <article class="card review-card">
+        <div class="review-header">
+          <strong>Кирилл Н.</strong>
+          <span class="badge">Выезд в Тулу</span>
+        </div>
+        <p>«Круто провели время! Комфорт на высшем уровне, дорога пролетела незаметно. Обязательно поеду еще.»</p>
+        <div class="review-footer">
+          <button class="reaction-btn like-btn">👍 <span class="count">29</span></button>
+          <button class="reaction-btn dislike-btn">👎 <span class="count">1</span></button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section container animate-up">
+    <div class="luck-banner">
+      <h2>Испытай свою удачу</h2>
+      <p style="margin-bottom: 30px; font-size: 1.8rem; color: #fff;">Один аккаунт — одна попытка. Крути колесо и выиграй мощную скидку или бесплатный билет!</p>
+      <button class="btn btn-primary" style="padding: 18px 40px; font-size: 1.8rem;" id="openRouletteBtn">Крутить колесо</button>
+    </div>
+  </section>
+
+  <!-- Блок коллажа с автобусами -->
+  <section id="gallery" class="section container animate-up">
+    <div style="text-align: center;">
+      <h2>Наш транспорт</h2>
+      <p>Те самые топовые лайнеры. Наведи курсор, чтобы рассмотреть.</p>
+    </div>
+    <div class="collage-container">
+      <div class="collage-item" style="background-image: url('1.jpg')"></div>
+      <div class="collage-item" style="background-image: url('2.jpg')"></div>
+      <div class="collage-item" style="background-image: url('3.jpg')"></div>
+      <div class="collage-item" style="background-image: url('4.jpg')"></div>
+      <div class="collage-item" style="background-image: url('5.jpg')"></div>
+      <div class="collage-item" style="background-image: url('6.jpg')"></div>
+    </div>
+  </section>
+
+  <section id="map-section" class="section container animate-up">
+    <div style="text-align: center; margin-bottom: 40px; padding: 0 20px;">
+      <h2>География выездов</h2>
+      <p>Кликни на город, чтобы проложить маршрут</p>
+    </div>
+    <div class="map-wrapper">
+      <svg viewBox="0 0 1000 600" class="svg-map" id="routeMap">
+        
+        <path id="path-moscow" class="route-line" d="M300,350 L450,150" stroke-width="3" />
+        <path id="path-kazan" class="route-line" d="M300,350 L750,220" stroke-width="3" />
+        <path id="path-nizhny" class="route-line" d="M300,350 L550,200" stroke-width="3" />
+        <path id="path-volgograd" class="route-line" d="M300,350 L500,520" stroke-width="3" />
+        <path id="path-samara" class="route-line" d="M300,350 L700,380" stroke-width="3" />
+        <path id="path-penza" class="route-line" d="M300,350 L400,430" stroke-width="3" />
+        <path id="path-tula" class="route-line" d="M300,350 L320,220" stroke-width="3" />
+        <path id="path-voronezh" class="route-line" d="M300,350 L200,450" stroke-width="3" />
+        <path id="path-rostov" class="route-line" d="M300,350 L250,550" stroke-width="3" />
+
+        <g class="city-point" data-target="t1" transform="translate(450,150)">
+          <circle r="12" />
+          <text y="-28">Москва</text>
+        </g>
+        <g class="city-point" data-target="t2" transform="translate(750,220)">
+          <circle r="12" />
+          <text y="-28">Казань</text>
+        </g>
+        <g class="city-point" data-target="t3" transform="translate(550,200)">
+          <circle r="12" />
+          <text y="-28">Н. Новгород</text>
+        </g>
+        <g class="city-point" data-target="t4" transform="translate(500,520)">
+          <circle r="12" />
+          <text y="-28">Волгоград</text>
+        </g>
+        <g class="city-point" data-target="t5" transform="translate(700,380)">
+          <circle r="12" />
+          <text y="-28">Самара</text>
+        </g>
+        <g class="city-point" data-target="t6" transform="translate(400,430)">
+          <circle r="12" />
+          <text y="-28">Пенза</text>
+        </g>
+        <g class="city-point" data-target="t7" transform="translate(320,220)">
+          <circle r="12" />
+          <text y="-28">Тула</text>
+        </g>
+        <g class="city-point" data-target="t8" transform="translate(200,450)">
+          <circle r="12" />
+          <text y="-28">Воронеж</text>
+        </g>
+        <g class="city-point" data-target="t9" transform="translate(250,550)">
+          <circle r="12" />
+          <text y="-28">Ростов-н/Д</text>
+        </g>
+        
+        <g class="city-point main" transform="translate(300,350)">
+          <circle r="16" />
+          <text y="45">САРАНСК</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <footer class="section container" style="text-align: center; padding-top: 40px; border-top: 1px solid var(--border); color: var(--muted);">
+    <p>&copy; 2026 FanTrip Hub. Разработано для Руслана.</p>
+  </footer>
+
+  <div class="modal" id="loginModal">
+    <div class="card modal-content">
+      <button class="close-modal">&times;</button>
+      <h3 style="margin-bottom: 20px;">Вход</h3>
+      <form id="loginForm">
+        <div class="field" style="margin-bottom: 15px;"><input type="email" placeholder="E-mail" required></div>
+        <div class="field" style="margin-bottom: 25px;"><input type="password" placeholder="Пароль" required></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="regModal">
+    <div class="card modal-content">
+      <button class="close-modal">&times;</button>
+      <h3 style="margin-bottom: 20px;">Регистрация</h3>
+      <form id="regForm">
+        <div class="field" style="margin-bottom: 15px;">
+          <input type="text" id="regName" placeholder="ФИО (напр., Руслан Хабибулин)" required>
+        </div>
+        <div class="field" style="margin-bottom: 15px;">
+          <input type="date" id="regDate" required>
+        </div>
+        <div class="field" style="margin-bottom: 15px;">
+          <input type="email" placeholder="E-mail" required>
+        </div>
+        <div class="field" style="margin-bottom: 25px;">
+          <input type="password" placeholder="Пароль" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Создать аккаунт</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="rouletteModal">
+    <div class="card modal-content" style="max-width: 500px; text-align: center;">
+      <button class="close-modal">&times;</button>
+      <h3 style="margin-bottom: 10px;">Удача фаната</h3>
+      <p style="margin-bottom: 20px;">Твой шанс забрать лучший купон</p>
+      <div class="roulette-container">
+        <div class="arrow"></div>
+        <div class="center-go"><button id="spinBtn" style="font-size: 20px; color: #fff;">GO</button></div>
+        <div class="wheel" id="rouletteWheel"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="bookingModal">
+    <div class="card modal-content">
+      <button class="close-modal">&times;</button>
+      <h3>Выбор мест</h3>
+      <div class="field" style="margin-top: 15px;">
+        <label>Билетов: <strong id="ticketCountDisplay">1</strong></label>
+        <input type="range" id="ticketCountInput" min="1" max="5" value="1">
+      </div>
+      <div class="seat-map" id="seatMap"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
+        <button id="applyPrizeBtn" class="btn btn-outline" style="display: none;"></button>
+        <div style="font-size: 2.6rem; font-weight: 800;" id="bookingTotal">0 ₽</div>
+        <button class="btn btn-primary" id="confirmBookingBtn" style="width: 100%;">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* статические данные поездок (теперь их 9) */
+    const staticTrips = [
+      { id: 't1', from: 'Саранск', to: 'Москва', date: '2026-05-15', basePrice: 4000, maxSeats: 48 },
+      { id: 't2', from: 'Саранск', to: 'Казань', date: '2026-05-22', basePrice: 3500, maxSeats: 48 },
+      { id: 't3', from: 'Саранск', to: 'Нижний Новгород', date: '2026-06-05', basePrice: 3800, maxSeats: 48 },
+      { id: 't4', from: 'Саранск', to: 'Волгоград', date: '2026-06-12', basePrice: 4200, maxSeats: 48 },
+      { id: 't5', from: 'Саранск', to: 'Самара', date: '2026-06-20', basePrice: 3200, maxSeats: 48 },
+      { id: 't6', from: 'Саранск', to: 'Пенза', date: '2026-06-28', basePrice: 2000, maxSeats: 48 },
+      { id: 't7', from: 'Саранск', to: 'Тула', date: '2026-07-05', basePrice: 2800, maxSeats: 48 },
+      { id: 't8', from: 'Саранск', to: 'Воронеж', date: '2026-07-12', basePrice: 3100, maxSeats: 48 },
+      { id: 't9', from: 'Саранск', to: 'Ростов-на-Дону', date: '2026-07-19', basePrice: 4500, maxSeats: 48 },
+    ];
+
+    /* 25 лотов: 15 белых скидок, 8 серых "Ничего", 2 зеленых "Билет" */
+    const w = { color: '#ffffff', textColor: '#000000' };
+    const b = { color: '#1f1f22', textColor: '#ffffff' };
+    const g = { color: '#a7f3d0', textColor: '#064e3b' }; 
+
+    const prizes = [
+      { label: '-100 РУБ', val: 100, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-150 РУБ', val: 150, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-200 РУБ', val: 200, type: 'discount', ...w },
+      { label: '-500 РУБ', val: 500, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-1000 РУБ', val: 1000, type: 'discount', ...w },
+      { label: 'БИЛЕТ', val: 1, type: 'free', ...g },
+      { label: '-100 РУБ', val: 100, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-150 РУБ', val: 150, type: 'discount', ...w },
+      { label: '-200 РУБ', val: 200, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-500 РУБ', val: 500, type: 'discount', ...w },
+      { label: '-1000 РУБ', val: 1000, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-100 РУБ', val: 100, type: 'discount', ...w },
+      { label: '-150 РУБ', val: 150, type: 'discount', ...w },
+      { label: 'БИЛЕТ', val: 1, type: 'free', ...g },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-200 РУБ', val: 200, type: 'discount', ...w },
+      { label: '-500 РУБ', val: 500, type: 'discount', ...w },
+      { label: 'ПУСТО', val: 0, type: 'none', ...b },
+      { label: '-1000 РУБ', val: 1000, type: 'discount', ...w },
+    ];
+
+    let currentUser = null;
+    let currentBookingTrip = null;
+    let selectedSeatsArray = [];
+    let isDiscountApplied = false;
+
+    /* формат цены */
+    const formatPrice = (price) => `${Math.max(0, Math.round(price)).toLocaleString('ru-RU')} RUB`;
+
+    /* расчет динамической скидки */
+    const calculateDynamicPrice = (base, fullPct) => base * (1 - (fullPct / 100) * 0.35);
+
+    /* функция цвета */
+    const getDynamicColor = (pct) => {
+      let hue, lightness;
+      if (pct <= 20) {
+        hue = 0; lightness = 30 + (pct / 20) * 25;
+      } else if (pct <= 60) {
+        hue = 30; lightness = 35 + ((pct - 20) / 40) * 20;
+      } else {
+        hue = 120; lightness = 25 + ((pct - 60) / 40) * 35;
+      }
+      return `hsl(${hue}, 90%, ${lightness}%)`;
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initMobileMenu();
+      initAuth();
+      initDynamicDemo();
+      renderTrips();
+      initModals();
+      buildRoulette();
+      initBookingSystem();
+      initScrollAnimations();
+      initInteractiveMap();
+      initReviews();
+    });
+
+    function initReviews() {
+      document.querySelectorAll('.review-card').forEach(card => {
+        const likeBtn = card.querySelector('.like-btn');
+        const dislikeBtn = card.querySelector('.dislike-btn');
+        const likeCountSpan = likeBtn.querySelector('.count');
+        const dislikeCountSpan = dislikeBtn.querySelector('.count');
+
+        let likeCount = parseInt(likeCountSpan.textContent);
+        let dislikeCount = parseInt(dislikeCountSpan.textContent);
+        let state = 0; // 0 = ничего, 1 = лайк, -1 = дизлайк
+
+        likeBtn.addEventListener('click', () => {
+          if (state === 1) {
+            // Убираем лайк
+            likeCount--;
+            state = 0;
+            likeBtn.classList.remove('liked');
+          } else {
+            // Ставим лайк
+            likeCount++;
+            likeBtn.classList.add('liked');
+            if (state === -1) {
+              dislikeCount--; // Убираем дизлайк, если он стоял
+              dislikeBtn.classList.remove('disliked');
+            }
+            state = 1;
+          }
+          likeCountSpan.textContent = likeCount;
+          dislikeCountSpan.textContent = dislikeCount;
+        });
+
+        dislikeBtn.addEventListener('click', () => {
+          if (state === -1) {
+            // Убираем дизлайк
+            dislikeCount--;
+            state = 0;
+            dislikeBtn.classList.remove('disliked');
+          } else {
+            // Ставим дизлайк
+            dislikeCount++;
+            dislikeBtn.classList.add('disliked');
+            if (state === 1) {
+              likeCount--; // Убираем лайк, если он стоял
+              likeBtn.classList.remove('liked');
+            }
+            state = -1;
+          }
+          likeCountSpan.textContent = likeCount;
+          dislikeCountSpan.textContent = dislikeCount;
+        });
+      });
+    }
+
+    function initMobileMenu() {
+      const burger = document.getElementById('burgerBtn');
+      const navLinks = document.getElementById('navLinks');
+      if (!burger) return;
+      burger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        burger.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+      });
+    }
+
+    function initAuth() {
+      const savedUser = localStorage.getItem('fanTripUser');
+      if (savedUser) currentUser = JSON.parse(savedUser);
+      updateNavUI();
+
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        currentUser = { name: 'С возвращением, Фанат!', played: false, prize: null, birth: '2000-01-01' };
+        localStorage.setItem('fanTripUser', JSON.stringify(currentUser));
+        updateNavUI();
+        document.getElementById('loginModal').classList.remove('open');
+        e.target.reset();
+      });
+
+      document.getElementById('regForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputName = document.getElementById('regName').value.trim();
+        const inputDate = document.getElementById('regDate').value;
+        currentUser = { name: inputName, birth: inputDate, played: false, prize: null };
+        localStorage.setItem('fanTripUser', JSON.stringify(currentUser));
+        updateNavUI();
+        document.getElementById('regModal').classList.remove('open');
+        e.target.reset();
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        currentUser = null;
+        localStorage.removeItem('fanTripUser');
+        updateNavUI();
+      });
+    }
+
+    function updateNavUI() {
+      const authGroup = document.querySelector('.auth-group');
+      const userMenu = document.querySelector('.user-menu');
+      const userName = document.getElementById('userNameDisplay');
+      if (currentUser) {
+        authGroup.style.display = 'none';
+        userMenu.style.display = 'flex';
+        userName.textContent = currentUser.name;
+      } else {
+        authGroup.style.display = 'flex';
+        userMenu.style.display = 'none';
+      }
+    }
+
+    function initDynamicDemo() {
+      const slider = document.getElementById('demoFill');
+      const seatsVal = document.getElementById('demoSeats');
+      const priceVal = document.getElementById('demoPrice');
+      const bar = document.getElementById('demoBar');
+      const percentVal = document.getElementById('demoPercent');
+      if(!slider) return;
+
+      const updateDemo = () => {
+        const fill = slider.value;
+        const fullPct = (fill / 48) * 100;
+        const color = getDynamicColor(fullPct);
+        seatsVal.textContent = `${fill} / 48`;
+        percentVal.textContent = `${Math.round(fullPct)}%`;
+        percentVal.style.color = color;
+        bar.style.width = `${fullPct}%`;
+        bar.style.backgroundColor = color;
+        priceVal.textContent = formatPrice(calculateDynamicPrice(4000, fullPct));
+      };
+      slider.addEventListener('input', updateDemo);
+      updateDemo();
+    }
+
+    function renderTrips() {
+      const grid = document.getElementById('tripsGrid');
+      grid.innerHTML = staticTrips.map((trip, idx) => {
+        const fill = Math.floor(Math.random() * 35) + 10;
+        const fullPct = (fill / trip.maxSeats) * 100;
+        const price = calculateDynamicPrice(trip.basePrice, fullPct);
+        const color = getDynamicColor(fullPct);
+        
+        return `
+          <article class="card trip-card animate-up" id="card-${trip.id}" style="transition-delay: ${idx * 0.1}s">
+            <div class="trip-head"><h3>${trip.from} — ${trip.to}</h3></div>
+            <div>
+              <p style="margin-bottom: 8px">Дата: <strong>${trip.date}</strong></p>
+              <div class="progress-bg"><div class="progress-bar" style="width: ${fullPct}%; background-color: ${color}; box-shadow: 0 0 10px ${color}"></div></div>
+            </div>
+            <div class="trip-footer">
+              <div class="trip-price" style="color: ${color}">${formatPrice(price)}</div>
+              <button class="btn btn-primary" onclick="openBooking('${trip.id}', ${price}, ${fill})">Выбрать места</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function initBookingSystem() {
+      const countInput = document.getElementById('ticketCountInput');
+      const countDisplay = document.getElementById('ticketCountDisplay');
+      const seatMap = document.getElementById('seatMap');
+      const applyPrizeBtn = document.getElementById('applyPrizeBtn');
+      const confirmBtn = document.getElementById('confirmBookingBtn');
+
+      countInput.addEventListener('input', () => {
+        countDisplay.textContent = countInput.value;
+        while(selectedSeatsArray.length > countInput.value) {
+          const removed = selectedSeatsArray.pop();
+          document.querySelector(`[data-seat="${removed}"]`).classList.remove('selected');
+        }
+        updateBookingTotal();
+      });
+
+      applyPrizeBtn.addEventListener('click', () => {
+        isDiscountApplied = true;
+        applyPrizeBtn.style.display = 'none';
+        updateBookingTotal();
+      });
+
+      confirmBtn.addEventListener('click', () => {
+        if (selectedSeatsArray.length < countInput.value) {
+          alert(`Выберите еще мест: ${countInput.value - selectedSeatsArray.length}`);
+          return;
+        }
+        alert(`Успешно оформлено! Сумма: ${document.getElementById('bookingTotal').textContent}. Места: ${selectedSeatsArray.join(', ')}`);
+        document.getElementById('bookingModal').classList.remove('open');
+      });
+
+      seatMap.addEventListener('click', (e) => {
+        if (e.target.classList.contains('free')) {
+          const seatId = e.target.dataset.seat;
+          if (selectedSeatsArray.includes(seatId)) {
+            selectedSeatsArray = selectedSeatsArray.filter(s => s !== seatId);
+            e.target.classList.remove('selected');
+          } else {
+            if (selectedSeatsArray.length < countInput.value) {
+              selectedSeatsArray.push(seatId);
+              e.target.classList.add('selected');
+            }
+          }
+          updateBookingTotal();
+        }
+      });
+    }
+
+    function openBooking(tripId, currentPrice, currentFill) {
+      if (!currentUser) { alert('Необходим вход в профиль'); return; }
+      currentBookingTrip = { id: tripId, price: currentPrice, fill: currentFill };
+      selectedSeatsArray = [];
+      isDiscountApplied = false;
+      document.getElementById('ticketCountInput').value = 1;
+      document.getElementById('ticketCountDisplay').textContent = 1;
+      const seatMap = document.getElementById('seatMap');
+      seatMap.innerHTML = '';
+      for (let i = 1; i <= 48; i++) {
+        const isTaken = i <= currentFill;
+        const div = document.createElement('div');
+        div.className = `seat ${isTaken ? 'taken' : 'free'}`;
+        div.dataset.seat = i;
+        div.textContent = i;
+        seatMap.appendChild(div);
+      }
+      const prizeBtn = document.getElementById('applyPrizeBtn');
+      if (currentUser.prize && currentUser.prize.type !== 'none') {
+        prizeBtn.style.display = 'inline-flex';
+        prizeBtn.textContent = `Применить: ${currentUser.prize.label}`;
+      } else {
+        prizeBtn.style.display = 'none';
+      }
+      updateBookingTotal();
+      document.getElementById('bookingModal').classList.add('open');
+    }
+
+    function updateBookingTotal() {
+      if (!currentBookingTrip) return;
+      const count = parseInt(document.getElementById('ticketCountInput').value);
+      let total = currentBookingTrip.price * count;
+      if (isDiscountApplied && currentUser.prize) {
+        if (currentUser.prize.type === 'discount') total -= currentUser.prize.val;
+        else if (currentUser.prize.type === 'free') total -= currentBookingTrip.price;
+      }
+      document.getElementById('bookingTotal').textContent = formatPrice(total);
+    }
+
+    function buildRoulette() {
+      const wheel = document.getElementById('rouletteWheel');
+      const spinBtn = document.getElementById('spinBtn');
+      if(!wheel) return;
+      const sliceDeg = 360 / prizes.length;
+      let gradientParts = [];
+      prizes.forEach((prize, i) => {
+        const startAngle = i * sliceDeg;
+        const endAngle = (i + 1) * sliceDeg;
+        gradientParts.push(`${prize.color} ${startAngle}deg ${endAngle}deg`);
+        const item = document.createElement('div');
+        item.className = 'wheel-item';
+        const centerAngle = startAngle + (sliceDeg / 2);
+        item.style.transform = `rotate(${centerAngle - 90}deg)`;
+        const span = document.createElement('span');
+        span.textContent = prize.label;
+        span.style.color = prize.textColor;
+        item.appendChild(span);
+        wheel.appendChild(item);
+      });
+      wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+      document.getElementById('openRouletteBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!currentUser) { alert('Войдите, чтобы участвовать'); return; }
+        if (currentUser.played) { alert('Попытка уже использована'); return; }
+        document.getElementById('rouletteModal').classList.add('open');
+      });
+      spinBtn.addEventListener('click', () => {
+        if (currentUser.played) return;
+        const targetIdx = Math.floor(Math.random() * prizes.length);
+        const targetAngle = (targetIdx * sliceDeg) + (sliceDeg / 2);
+        const finalRot = (5 * 360) - targetAngle;
+        wheel.style.transform = `rotate(${finalRot}deg)`;
+        setTimeout(() => {
+          currentUser.played = true;
+          currentUser.prize = prizes[targetIdx];
+          localStorage.setItem('fanTripUser', JSON.stringify(currentUser));
+          alert(`Результат: ${prizes[targetIdx].label}`);
+          document.getElementById('rouletteModal').classList.remove('open');
+        }, 4500);
+      });
+    }
+
+    function initModals() {
+      const closes = document.querySelectorAll('.close-modal');
+      closes.forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+      }));
+      document.querySelectorAll('[data-modal]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.getElementById(btn.dataset.modal).classList.add('open');
+        });
+      });
+    }
+
+    function initScrollAnimations() {
+      const obs = new IntersectionObserver(e => e.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      }), { threshold: 0.1 });
+      document.querySelectorAll('.animate-up').forEach(el => obs.observe(el));
+    }
+
+    /* Интерактивная карта (теперь обрабатывает 9 маршрутов) */
+    function initInteractiveMap() {
+      const points = document.querySelectorAll('.city-point[data-target]');
+      const lines = {
+        't1': document.getElementById('path-moscow'),
+        't2': document.getElementById('path-kazan'),
+        't3': document.getElementById('path-nizhny'),
+        't4': document.getElementById('path-volgograd'),
+        't5': document.getElementById('path-samara'),
+        't6': document.getElementById('path-penza'),
+        't7': document.getElementById('path-tula'),
+        't8': document.getElementById('path-voronezh'),
+        't9': document.getElementById('path-rostov')
+      };
+
+      points.forEach(point => {
+        point.addEventListener('mouseenter', () => {
+          const id = point.dataset.target;
+          if (lines[id]) lines[id].classList.add('active');
+        });
+
+        point.addEventListener('mouseleave', () => {
+          const id = point.dataset.target;
+          if (lines[id]) lines[id].classList.remove('active');
+        });
+
+        point.addEventListener('click', () => {
+          const tripId = point.dataset.target;
+          const targetCard = document.getElementById(`card-${tripId}`);
+          const targetSection = document.getElementById('trips');
+          
+          targetSection.scrollIntoView({ behavior: 'smooth' });
+          
+          if (targetCard) {
+            // Кратковременная подсветка карточки при переходе с карты
+            setTimeout(() => {
+              targetCard.style.borderColor = '#fff';
+              targetCard.style.boxShadow = '0 0 30px rgba(255,255,255,0.2)';
+              setTimeout(() => {
+                targetCard.style.borderColor = 'var(--border)';
+                targetCard.style.boxShadow = '';
+              }, 2000);
+            }, 500);
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
